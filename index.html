@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<style>
+			body{
+				margin: 0; padding: 0; width: 100%;
+			}
+			.content{
+				display: flex;
+				justify-content: center;
+			}
+			.svg{
+				box-shadow: 0 0 0 2px black;
+				margin: 30px 0 0 0;
+			}
+		</style>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<title>Snake</title>
+	</head>
+	<body>
+		<div class="content">
+			<svg id=svg class="svg" width="480px" height="480px">
+				<circle id="red" r="15" cy="240" cx="240" fill="red"></circle>
+			</svg>
+		</div>
+		<script>
+			$(document).ready(function(){
+
+				var to=null;
+				var coordY;
+				var coordX;
+				var coords = [];
+			
+				$(document).keypress(function(e){		// Проверяет нажатую клавишу			
+					if(e.charCode == 119) to = "w";
+
+					if(e.charCode == 100) to = "d";
+					
+					if(e.charCode == 115)	to = "s";
+					
+					if(e.charCode == 97) to = "a";
+
+				});
+
+				var snakeMoveTo = (to) => {
+					
+					if(to){ // отслеживаем нажатие клавиши
+						switch(to){
+							case "w": 
+								if($("#svg").offset().top < $("#red").offset().top)
+									coordY = parseInt($("#red").css('cy')) - 30; $("#red").css('cy', coordY); 
+							break;
+							case "d": 
+								if($("#svg").offset().left+480 > $("#red").offset().left+30)
+									coordX = parseInt($("#red").css('cx')) + 30; $("#red").css('cx', coordX); 
+							break;
+							case "s": 
+								if($("#svg").offset().top+480 > $("#red").offset().top+30)
+									coordY = parseInt($("#red").css('cy')) + 30; $("#red").css('cy', coordY); 
+							break;
+							case "a": 
+								if($("#svg").offset().left < $("#red").offset().left)
+									coordX = parseInt($("#red").css('cx')) - 30; $("#red").css('cx', coordX); 
+							break;
+							default: break;
+						}
+					}
+					else{ // Двигаем по умолчанию
+						to="d";
+						if($("#svg").offset().left+480 > $("#red").offset().left+30){
+							$coordX =  parseInt($("#red").css('cx')) + 30;
+							$("#red").css('cx', $coordX);
+						}
+					}
+					coordX = $("#red").css('cx');
+					coordY = $("#red").css('cy');
+					$.ajax({
+						url: 'coords.php', // Куда кидаем запрос
+						type: "POST", // Каким методом
+						data: {"coordX":coordX , "coordY":coordY}, // Объект, которым кидаемся
+						success: function(data) { // В случае удачного запроса, принимаем данные в ответ
+							if(data){
+								var circle = $("#svg").html();
+								circle = data + circle;
+								$("#svg").html(circle);
+							}
+						}
+					});	
+				}
+
+				var printSnake = setInterval(function() {
+					snakeMoveTo(to);
+				}, 100);
+
+
+				function c(str){console.log(str);}
+			});
+		</script>
+	</body>
+</html>
